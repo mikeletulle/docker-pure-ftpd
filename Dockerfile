@@ -44,11 +44,13 @@ RUN apt-get -y update && \
         libmariadb3 \
         libpam0g \
         libssl1.1 \
+        libsodium23 \
         lsb-base \
         openbsd-inetd \
         openssl \
         perl \
         rsyslog
+
 
 # Copy compiled .deb packages from builder
 COPY --from=builder /tmp/pure-ftpd/*.deb /tmp/pure-ftpd/
