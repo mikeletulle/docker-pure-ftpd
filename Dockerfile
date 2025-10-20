@@ -38,5 +38,54 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install runtime dependencies
 RUN apt-get -y update && \
-    apt-get --no-install-recommends
+    apt-get --no-install-recommends --yes install \
+        libc6 \
+        libcap2 \
+        libmariadb3 \
+        libpam0g \
+        libssl1.1 \
+        lsb-base \
+        openbsd-inetd \
+        openssl \
+        perl \
+        rsyslog
 
+# Copy compiled .deb packages from builder
+COPY --from=builder /tmp/pure-ftpd/*.deb /tmp/pure-ftpd/
+
+# Install the new deb files
+RUN dpkg -i /tmp/pure-ftpd/pure-ftpd-common*.deb && \
+    dpkg -i /tmp/pure-ftpd/pure-ftpd_*.deb && \
+    rm -rf /tmp/pure-ftpd
+
+# Prevent auto-upgrade of the built packages
+RUN apt-mark hold pure-ftpd pure-ftpd-common
+
+# Setup ftpgroup and ftpuser
+RUN groupadd ftpgroup && \
+    useradd -g ftpgroup -d /home/ftpusers -s /usr/sbin/nologin ftpuser
+
+# Configure rsyslog logging
+RUN echo "" >> /etc/rsyslog.conf && \
+    echo "#PureFTP Custom Logging" >> /etc/rsyslog.conf && \
+    echo "ftp.* /var/log/pure-ftpd/pureftpd.log" >> /etc/rsyslog.conf
+
+# Copy startup script
+COPY run.sh /run.sh
+RUN chmod +x /run.sh
+
+# Cleanup
+RUN apt-get -y clean && apt-get -y autoclean && apt-get -y autoremove && \
+    rm -rf /var/lib/apt/lists/*
+
+# Default public host (overridden by env var)
+ENV PUBLICHOST=localhost
+
+# Expose FTP ports
+EXPOSE 21 30000-30009
+
+# Volumes for data and passwd
+VOLUME ["/home/ftpusers", "/etc/pure-ftpd/passwd"]
+
+# Startup command
+CMD ["/run.sh", "-l", "puredb:/etc/pure-ftpd/pureftpd.pdb", "-E", "-j", "-R", "-P", "${PUBLICHOST}"]
