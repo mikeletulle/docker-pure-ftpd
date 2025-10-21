@@ -90,6 +90,7 @@ EXPOSE 21 30000-30009
 VOLUME ["/home/ftpusers", "/etc/pure-ftpd/passwd"]
 
 # Startup command
-#CMD ["/run.sh", "-l", "puredb:/etc/pure-ftpd/pureftpd.pdb", "-E", "-j", "-R", "-P", "${PUBLICHOST}"]
+CMD ["bash", "-x", "/run.sh", "-c", "5", "-C", "10", "-l", "puredb:/etc/pure-ftpd/pureftpd.pdb", "-E", "-j", "-R", "-P", "${PUBLICHOST}", "-S", "0.0.0.0,${PORT}", "-p", "30000:30009"]
 
-CMD ["sleep", "3600"]
+
+#CMD ["sleep", "3600"]
