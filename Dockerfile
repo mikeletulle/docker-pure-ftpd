@@ -91,3 +91,5 @@ VOLUME ["/home/ftpusers", "/etc/pure-ftpd/passwd"]
 
 # Startup command
 CMD ["/run.sh", "-l", "puredb:/etc/pure-ftpd/pureftpd.pdb", "-E", "-j", "-R", "-P", "${PUBLICHOST}"]
+
+CMD ["sleep", "3600"]
